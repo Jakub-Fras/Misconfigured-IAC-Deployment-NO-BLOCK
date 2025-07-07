@@ -1,7 +1,7 @@
 trigger:
   branches:
     include:
-      - master    # ← make sure this matches what your DevOps connector is watching
+      - master
 
 pool:
   vmImage: 'windows-latest'
@@ -33,17 +33,10 @@ steps:
       failOnPolicyViolation: false
     continueOnError: true
 
-  # 4. Copy the SARIF report into the staging folder (so Publish can find it)
-  - task: CopyFiles@2
-    displayName: 'Copy SARIF report to staging'
-    inputs:
-      SourceFolder: '$(Build.SourcesDirectory)'        # adjust if your scan writes elsewhere
-      Contents:      '**/iac-scan.sarif'
-      TargetFolder:  '$(Build.ArtifactStagingDirectory)'
-
-  # 5. Publish the SARIF as a build artifact
+  # 4. Publish everything in the staging directory (includes iac-scan.sarif)
   - task: PublishBuildArtifacts@1
     displayName: 'Publish CodeAnalysisLogs'
     inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)/iac-scan.sarif'
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
       ArtifactName:  'CodeAnalysisLogs'
+      publishLocation: 'Container'
