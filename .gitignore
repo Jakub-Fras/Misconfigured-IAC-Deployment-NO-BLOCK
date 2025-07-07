@@ -1,0 +1,5 @@
+# Terraform plugin cache and state
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+*.tfstate.*
