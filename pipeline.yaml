@@ -33,9 +33,17 @@ steps:
       failOnPolicyViolation: false
     continueOnError: true
 
-  # 4. (Optional) Explicit publish if you prefer
+  # 4. Copy the SARIF report into the staging folder (so Publish can find it)
+  - task: CopyFiles@2
+    displayName: 'Copy SARIF report to staging'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)'        # adjust if your scan writes elsewhere
+      Contents:      '**/iac-scan.sarif'
+      TargetFolder:  '$(Build.ArtifactStagingDirectory)'
+
+  # 5. Publish the SARIF as a build artifact
   - task: PublishBuildArtifacts@1
     displayName: 'Publish CodeAnalysisLogs'
     inputs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)/iac-scan.sarif'
-      ArtifactName: 'CodeAnalysisLogs'
+      ArtifactName:  'CodeAnalysisLogs'
