@@ -5,3 +5,4 @@ terraform.tfstate.backup
 *.tfstate.*
 tfplan.out
 tfplan.out
+destroy.tfplan

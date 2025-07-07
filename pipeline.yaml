@@ -1,0 +1,41 @@
+trigger:
+  branches:
+    include:
+      - master    # ← make sure this matches what your DevOps connector is watching
+
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+  # 1. Install Terraform
+  - task: TerraformInstaller@1
+    displayName: 'Install Terraform'
+    inputs:
+      terraformVersion: 'latest'
+
+  # 2. Terraform init & validate
+  - script: |
+      terraform init -backend=false
+      terraform validate
+    workingDirectory: '$(Build.SourcesDirectory)'
+    displayName: 'Terraform Init & Validate'
+
+  # 3. Run the MSDO IaC scan (findings won’t fail the build)
+  - task: MicrosoftSecurityDevOps@1
+    displayName: 'MSDO IaC Security Scan'
+    inputs:
+      categories: 'IaC'
+      tools: 'terrascan,checkov'
+      sourceDirectory: '$(Build.SourcesDirectory)'
+      outputSarif: '$(Build.ArtifactStagingDirectory)/iac-scan.sarif'
+      publish: true
+      artifactName: 'CodeAnalysisLogs'
+      failOnPolicyViolation: false
+    continueOnError: true
+
+  # 4. (Optional) Explicit publish if you prefer
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish CodeAnalysisLogs'
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)/iac-scan.sarif'
+      ArtifactName: 'CodeAnalysisLogs'
